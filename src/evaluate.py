@@ -1,5 +1,5 @@
 # src/evaluate.py
-from datasets import load_metric
+from evaluate import load
 from utils import extract_entities
 import sacrebleu
 
@@ -8,7 +8,6 @@ def compute_bleu(hyps, refs):
     return bleu.score
 
 def hallucination_rate(srcs, hyps):
-    # HR: fraction of entities in hypotheses not grounded in source or KB
     total_hyp_entities = 0
     hallucinated = 0
     for s, h in zip(srcs, hyps):
@@ -23,7 +22,6 @@ def hallucination_rate(srcs, hyps):
     return hallucinated / total_hyp_entities
 
 def factual_consistency_score(srcs, hyps):
-    # Simple heuristic: fraction of source entities preserved in hypothesis
     total = 0
     matched = 0
     for s, h in zip(srcs, hyps):

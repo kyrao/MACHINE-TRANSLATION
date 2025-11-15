@@ -7,12 +7,39 @@ _KB_PATH = Path(__file__).parent / "kb" / "local_kb.json"
 
 def extract_entities(text):
     """
-    Simple entity extractor:
-    - extracts Capitalized words and multi-word entities.
-    - Not perfect, but works without spaCy.
+    Extract ONLY proper nouns / named entities:
+    - Must contain at least one space (multi-word proper names)
+    - OR single capitalized words NOT in a stopword list
     """
-    pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b'
-    return re.findall(pattern, text)
+    stopwords = {
+        "I","We","You","He","She","It","They",
+        "My","Your","His","Her","Their","Our",
+        "A","An","The","In","On","At","To",
+        "Want","Eat","Breakfast","Lunch","Dinner"
+    }
+
+    words = text.split()
+    entities = []
+
+    for i in range(len(words)):
+        w = words[i].strip()
+
+        # Ignore all-uppercase words (I, WANT, EAT, etc.)
+        if w.upper() == w:
+            continue
+
+        # Single capitalized word (India, Paris, Obama)
+        if w[0].isupper() and w not in stopwords:
+            # Check multi-word name: Barack Obama, New York
+            if i + 1 < len(words) and words[i+1][0].isupper():
+                entities.append(w + " " + words[i+1])
+            else:
+                # Only real proper nouns, not small words like "To", "At"
+                if len(w) > 3:
+                    entities.append(w)
+
+    return list(set(entities))
+
 
 def load_kb():
     if _KB_PATH.exists():

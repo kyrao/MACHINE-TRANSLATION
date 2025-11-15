@@ -6,7 +6,6 @@ accelerate
 datasets
 evaluate
 sacrebleu
-spacy
 faiss-cpu
 tqdm
 pyarrow

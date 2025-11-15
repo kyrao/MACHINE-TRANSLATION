@@ -2,20 +2,17 @@
 import json
 import re
 from pathlib import Path
-import spacy
 
 _KB_PATH = Path(__file__).parent / "kb" / "local_kb.json"
-nlp = None
-
-def get_nlp():
-    global nlp
-    if nlp is None:
-        nlp = spacy.load("en_core_web_sm")
-    return nlp
 
 def extract_entities(text):
-    doc = get_nlp()(text)
-    return [ent.text for ent in doc.ents]
+    """
+    Simple entity extractor:
+    - extracts Capitalized words and multi-word entities.
+    - Not perfect, but works without spaCy.
+    """
+    pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b'
+    return re.findall(pattern, text)
 
 def load_kb():
     if _KB_PATH.exists():
@@ -32,15 +29,11 @@ def kb_lookup(entity, target_lang):
     return None
 
 def apply_kb_on_output(output_text, source_entities, target_lang):
-    """
-    Replace target mentions with KB canonical forms when possible (case-insensitive).
-    """
     adjusted = output_text
     applied = []
     for e in source_entities:
         canonical = kb_lookup(e, target_lang)
         if canonical:
-            # naive replacement, preserve word boundaries
             pattern = re.compile(re.escape(e), flags=re.IGNORECASE)
             if pattern.search(adjusted):
                 adjusted = pattern.sub(canonical, adjusted)
